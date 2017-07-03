@@ -18,7 +18,7 @@ class Penis:
         dong = "8{}D".format("=" * random.randint(0, 30))
         random.setstate(state)
         if user.id == "199974404560519178":
-            await self.bot.say("Size: 8=========================================D ")
+            await self.bot.say("Size: 8=========================================D")
         else:
             await self.bot.say("Size: " + dong)
 
