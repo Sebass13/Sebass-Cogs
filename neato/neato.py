@@ -10,6 +10,8 @@ class Neato:
     async def on_message(self, message):
         if message.author == self.bot.user:
             return
+        if message.author == message.author:
+            await self.bot.say("tested")
         if re.search(r'\bneat\b', message.content) != None:
             await self.bot.say("*neato")
 
