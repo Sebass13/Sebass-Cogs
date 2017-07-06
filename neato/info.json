@@ -1,0 +1,7 @@
+{
+    "AUTHOR" : "Sebass", 
+    "DESCRIPTION" : "Corrects any use of the word \"neat\"",
+    "SHORT": "Corrects any use of the word \"neat\"",
+    "NAME" : "Neato",
+    "TAGS" : ["fun", "neato"]
+}
