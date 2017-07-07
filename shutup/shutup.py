@@ -49,7 +49,7 @@ class ShutUp:
             return
         if message.author == self.bot.user:
             return
-        if !(self.shutup[message.server.id]['tts']) and message.tts: 
+        if !(self.shutup[message.server.id]['tts']): 
             await self.bot.send_message(message.channel, message.author.mention + ", please stop using TTS, you trashcan of a human being.", tts=True)
 
 def check_folder():
