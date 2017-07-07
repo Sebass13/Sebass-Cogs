@@ -49,7 +49,7 @@ class ShutUp:
             return
         if message.author == self.bot.user:
             return
-        await self.bot.send_message(message.channel,"REEE", True)
+        await self.bot.send_message(message.channel, "REEE", tts=True)
 
 def check_folder():
     if not os.path.exists("data/shutup"):
