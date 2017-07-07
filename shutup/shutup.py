@@ -24,10 +24,11 @@ class ShutUp:
         if server.id not in self.shutup:
             self.shutup[server.id] = {}
         serversettings = self.shutup[server.id]
-        if serversettings["tts"] == False:
-            await self.bot.say("TTS already disabled.")
+        if 'tts' in serversettings:
+            if serversettings['tts'] == False:
+                await self.bot.say("TTS already disabled.")
         else:
-            serversettings["tts"] == False      
+            serversettings['tts'] == False      
         dataIO.save_json(self.file_path, self.shutup)
         
     @tts.command(name="enable", pass_context=True, no_pm=True)
@@ -37,11 +38,11 @@ class ShutUp:
         if server.id not in self.shutup:
             self.shutup[server.id] = {}
         serversettings = self.shutup[server.id]
-        if "tts" in serversettings:
-            if serversettings["tts"] == True:
+        if 'tts' in serversettings:
+            if serversettings['tts'] == True:
                 await self.bot.say("TTS already enabled.")
         else:
-            serversettings["tts"] == True       
+            serversettings['tts'] == True       
         dataIO.save_json(self.file_path, self.shutup)   
         
         
