@@ -51,7 +51,7 @@ class ShutUp:
             return
           
         
-        await self.bot.send_message(message.channel, if self.shutup[server.id]["tts"], tts=True) 
+        await self.bot.send_message(message.channel, self.shutup[server.id]["tts"], tts=True) 
 
 def check_folder():
     if not os.path.exists("data/shutup"):
