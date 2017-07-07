@@ -25,12 +25,12 @@ class ShutUp:
             self.shutup[server.id] = {}
         serversettings = self.shutup[server.id]
         if serversettings["tts"] == False:
-		    await self.bot.say("TTS already enabled.")
-		else:
-            serversettings["tts"] == False		
+            await self.bot.say("TTS already enabled.")
+        else:
+            serversettings["tts"] == False      
         dataIO.save_json(self.file_path, self.shutup)
-		
-	@customcom.command(name="enable", pass_context=True, no_pm=True)
+        
+    @customcom.command(name="enable", pass_context=True, no_pm=True)
     @checks.mod_or_permissions(administrator=True)
     async def tts_enable(self, ctx):
         server = ctx.message.server
@@ -38,10 +38,10 @@ class ShutUp:
             self.shutup[server.id] = {}
         serversettings = self.shutup[server.id]
         if serversettings["tts"] == True:
-		    await self.bot.say("TTS already enabled.")
-		else:
-            serversettings["tts"] == True		
-        dataIO.save_json(self.file_path, self.shutup)	
+            await self.bot.say("TTS already enabled.")
+        else:
+            serversettings["tts"] == True       
+        dataIO.save_json(self.file_path, self.shutup)   
         
         
     async def on_message(self, message):
@@ -55,7 +55,7 @@ class ShutUp:
             return
           
         if self.message.tts && self.shutup[server.id]["tts"]:
-	        await self.bot.send_message(message.channel, "Don't use TTS " + author.mention ", you fucking weaboo faggot", tts=True) 
+            await self.bot.send_message(message.channel, "Don't use TTS " + author.mention ", you fucking weaboo faggot", tts=True) 
 
 def check_folder():
     if not os.path.exists("data/shutup"):
