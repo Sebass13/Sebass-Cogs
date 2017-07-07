@@ -50,10 +50,6 @@ class ShutUp:
             return
         if message.author == self.bot.user:
             return
-        if not self.bot.user_allowed(message):
-            return
-        if self.is_command(message):
-            return
           
         if self.message.tts and self.shutup[server.id]["tts"]:
             await self.bot.send_message(message.channel, "Don't use TTS " + author.mention + ", you fucking weaboo faggot", tts=True) 
