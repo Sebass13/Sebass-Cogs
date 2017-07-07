@@ -17,7 +17,7 @@ class ShutUp:
         if ctx.invoked_subcommand is None:
             await self.bot.send_cmd_help(ctx)
             
-    @customcom.command(name="enable", pass_context=True, no_pm=True)
+    @tts.command(name="enable", pass_context=True, no_pm=True)
     @checks.mod_or_permissions(administrator=True)
     async def tts_enable(self, ctx):
         server = ctx.message.server
@@ -30,7 +30,7 @@ class ShutUp:
             serversettings["tts"] == False      
         dataIO.save_json(self.file_path, self.shutup)
         
-    @customcom.command(name="enable", pass_context=True, no_pm=True)
+    @tts.command(name="enable", pass_context=True, no_pm=True)
     @checks.mod_or_permissions(administrator=True)
     async def tts_enable(self, ctx):
         server = ctx.message.server
