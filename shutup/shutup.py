@@ -49,7 +49,7 @@ class ShutUp:
             return
         if message.author == self.bot.user:
             return
-        if self.shutup[server.id]['tts']:
+        if !(self.shutup[server.id]['tts']):
             await self.bot.send_message(message.channel, "Shut up boiiiii", tts=True)
 
 def check_folder():
