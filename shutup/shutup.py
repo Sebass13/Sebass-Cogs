@@ -49,7 +49,8 @@ class ShutUp:
             return
         if message.author == self.bot.user:
             return
-        await self.bot.send_message(message.channel, self.shutup[message.server.id]['tts'], tts=True)
+        if !(self.shutup[message.server.id]['tts']) and message.tts: 
+            await self.bot.send_message(message.channel, message.author.mention + ", please stop using TTS, you trashcan of a human being.", tts=True)
 
 def check_folder():
     if not os.path.exists("data/shutup"):
