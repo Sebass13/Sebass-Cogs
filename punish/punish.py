@@ -162,7 +162,6 @@ class Punish:
             msg = 'User was punished but had no timer, adding it now...'
         else:
             msg = 'Done.'
-        msg += user.id
         if not duration:
             msg += ' Using default duration of ' + DEFAULT_TIMEOUT
             duration = _parse_time(DEFAULT_TIMEOUT)
