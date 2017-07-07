@@ -12,7 +12,7 @@ class ShutUp:
         self.shutup = dataIO.load_json(self.file_path)
         
     @commands.group(pass_context=True, no_pm=True)
-    async def tts(self, ctx)
+    async def tts(self, ctx):
         """Enable/Disable TTS with a curt message."""
         if ctx.invoked_subcommand is None:
             await self.bot.send_cmd_help(ctx)
