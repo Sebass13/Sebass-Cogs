@@ -37,7 +37,7 @@ class ShutUp:
         if server.id not in self.shutup:
             self.shutup[server.id] = {}
         serversettings = self.shutup[server.id]
-        if serversettings["tts"] == True:
+        if "tts" in serversettings and serversettings["tts"] == True:
             await self.bot.say("TTS already enabled.")
         else:
             serversettings["tts"] == True       
