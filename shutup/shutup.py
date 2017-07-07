@@ -17,15 +17,15 @@ class ShutUp:
         if ctx.invoked_subcommand is None:
             await self.bot.send_cmd_help(ctx)
             
-    @tts.command(name="enable", pass_context=True, no_pm=True)
+    @tts.command(name="disable", pass_context=True, no_pm=True)
     @checks.mod_or_permissions(administrator=True)
-    async def tts_enable(self, ctx):
+    async def tts_disable(self, ctx):
         server = ctx.message.server
         if server.id not in self.shutup:
             self.shutup[server.id] = {}
         serversettings = self.shutup[server.id]
         if serversettings["tts"] == False:
-            await self.bot.say("TTS already enabled.")
+            await self.bot.say("TTS already disabled.")
         else:
             serversettings["tts"] == False      
         dataIO.save_json(self.file_path, self.shutup)
