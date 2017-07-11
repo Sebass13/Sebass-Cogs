@@ -47,8 +47,8 @@ class ShutUp:
     async def on_message(self, message):
         if message.server is None:
             return
-        #if message.author == self.bot.user:
-        #    return
+        if message.author == self.bot.user:
+            return
         if (not self.shutup[message.server.id]['tts']) and message.tts: 
             await self.bot.send_message(message.channel, message.author.mention + ", please stop using TTS, you trashcan of a human being.", tts=True)
 
