@@ -4,7 +4,7 @@ import re
 class Neato:
     """Neato"""
     def __init__(self, bot)
-        self.bot  bot
+        self.bot = bot
 
     async def on_message(self, message):
         if message.author == self.bot.user:
