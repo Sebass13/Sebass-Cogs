@@ -3,7 +3,8 @@ import re
 
 class Neato:
     """Neato"""
-    def __init__(self, bot)
+    
+    def __init__(self, bot):
         self.bot = bot
 
     async def on_message(self, message):
