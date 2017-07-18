@@ -50,7 +50,7 @@ class ShutUp:
         if message.author == self.bot.user:
             return
         if (not self.shutup[message.server.id]['tts']) and message.tts: 
-            if author.id == 313519333265506307:
+            if message.author.id == 313519333265506307:
                 await self.bot.send_message(message.channel, message.author.mention + ", please stop being a message.author.mention, message.author.mention.", tts=True)
                 return
             await self.bot.send_message(message.channel, message.author.mention + ", please stop using TTS, you trashcan of a human being.", tts=True)
