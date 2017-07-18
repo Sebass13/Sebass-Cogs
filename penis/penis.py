@@ -19,6 +19,8 @@ class Penis:
         random.setstate(state)
         if user.id == "199974404560519178":
             await self.bot.say("Size: 8=========================================D")
+        else if if user.id == "313519333265506307":
+            await self.bot.say("`Error: Penis not found for ID#313519333265506307`")
         else:
             await self.bot.say("Size: " + dong)
 
