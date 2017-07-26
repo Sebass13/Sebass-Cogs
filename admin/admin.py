@@ -98,6 +98,61 @@ class Admin:
 
         await self.bot.add_roles(user, role)
         await self.bot.say('Added role {} to {}'.format(role.name, user.name))
+        
+    @commands.command(no_pm=True, pass_context=True)
+    @checks.admin_or_permissions(manage_roles=True)
+    async def moverole(self, ctx, rolename, position):
+        """Moves a role in the server hierarchy
+
+        Role name must be in quotes if there are spaces."""
+        channel = ctx.message.channel
+        server = ctx.message.server
+
+        role = self._role_from_string(server, rolename)
+
+        if role is None:
+            await self.bot.say('That role cannot be found.')
+            return
+
+        if not channel.permissions_for(server.me).manage_roles:
+            await self.bot.say('I don\'t have manage_roles.')
+            return
+        
+        if all(role.position >= bot_role for bot_role in server.me.roles):
+            await self.bot.say("That role is too high for me to move.")
+            return
+        
+        if position <= 0:
+            await self.bot.say("Position value is too low.")
+            return
+        
+        if all(position >= bot_role for bot_role in server.me.roles):
+            await self.bot.say("The new placement of the role is too high.")
+            return 
+
+        await self.bot.move_roles(server, role, position)
+        await self.bot.say('Moved role {} to {}'.format(role.name, position))    
+        
+    @commands.command(no_pm=True, pass_context=True)
+    @checks.admin_or_permissions(manage_roles=True)
+    async def roleposition(self, ctx, rolename, position):
+        """Checks a role's position
+
+        Role name must be in quotes if there are spaces."""
+        channel = ctx.message.channel
+        server = ctx.message.server
+
+        role = self._role_from_string(server, rolename)
+
+        if role is None:
+            await self.bot.say('That role cannot be found.')
+            return
+
+        if not channel.permissions_for(server.me).manage_roles:
+            await self.bot.say('I don\'t have manage_roles.')
+            return
+        
+       await self.bot.say('Current position of {}: {}'.format(role.name, role.position))        
 
     @commands.group(pass_context=True, no_pm=True)
     async def adminset(self, ctx):
