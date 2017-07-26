@@ -131,7 +131,7 @@ class Admin:
             await self.bot.say("The new placement of the role is too high.")
             return 
 
-        await self.bot.move_roles(server, role, position)
+        await self.bot.move_role(server, role, position)
         await self.bot.say('Moved role {} to {}'.format(role.name, position))    
         
     @commands.command(no_pm=True, pass_context=True)
