@@ -118,7 +118,7 @@ class Admin:
             await self.bot.say('I don\'t have manage_roles.')
             return
         
-        if all(role.position >= bot_role for bot_role in server.me.roles):
+        if all(role >= bot_role for bot_role in server.me.roles):
             await self.bot.say("That role is too high for me to move.")
             return
         
