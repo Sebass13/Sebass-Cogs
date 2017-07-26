@@ -101,12 +101,13 @@ class Admin:
         
     @commands.command(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
-    async def moverole(self, ctx, rolename, position):
+    async def moverole(self, ctx, rolename, int: position):
         """Moves a role in the server hierarchy
 
         Role name must be in quotes if there are spaces."""
         channel = ctx.message.channel
         server = ctx.message.server
+        
 
         role = self._role_from_string(server, rolename)
 
