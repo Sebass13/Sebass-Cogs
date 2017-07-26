@@ -101,7 +101,7 @@ class Admin:
         
     @commands.command(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
-    async def moverole(self, ctx, rolename, number : position = None):
+    async def moverole(self, ctx, rolename, position : int):
         """Moves a role in the server hierarchy
 
         Role name must be in quotes if there are spaces."""
@@ -113,9 +113,6 @@ class Admin:
 
         if role is None:
             await self.bot.say('That role cannot be found.')
-            return
-        if position is None:
-            await self.bot.say('A position must be provided.')
             return
 
         if not channel.permissions_for(server.me).manage_roles:
