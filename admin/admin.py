@@ -174,7 +174,7 @@ class Admin:
             msg = await self.bot.wait_for_message(author=owner, timeout=15)
             try:
                 msg = int(msg.content)
-                await self.create_invite(servers[msg])
+                await self.bot.say(self.bot.create_invite(servers[msg]).url)
                 break
             except (IndexError, ValueError, AttributeError):
                 pass
