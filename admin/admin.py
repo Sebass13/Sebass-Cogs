@@ -127,7 +127,7 @@ class Admin:
             await self.bot.say("Position value is too low.")
             return
         
-        if all(position >= bot_role for bot_role in server.me.roles):
+        if all(role >= bot_role for bot_role in server.me.roles):
             await self.bot.say("The new placement of the role is too high.")
             return 
 
