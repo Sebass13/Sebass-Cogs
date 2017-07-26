@@ -177,6 +177,7 @@ class Admin:
                 await self.bot.say(self.bot.create_invite(servers[msg]).url)
                 break
             except (IndexError, ValueError, AttributeError):
+                await self.bot.say("Error, oops.")
                 pass
 
     @commands.group(pass_context=True, no_pm=True)
