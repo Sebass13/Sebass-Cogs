@@ -136,7 +136,7 @@ class Admin:
 
     @commands.command(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
-    async def whoowns(self, ctx, rolename, position : int):
+    async def whoowns(self, ctx):
         """Lists owner of the server."""
         server = ctx.message.server
         await self.bot.say("The owner of the server is " + server.owner.mention)	
