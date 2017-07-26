@@ -132,7 +132,14 @@ class Admin:
             return 
 
         await self.bot.move_role(server, role, position)
-        await self.bot.say('Moved role {} to {}'.format(role.name, position))    
+        await self.bot.say('Moved role {} to {}'.format(role.name, position))
+
+    @commands.command(no_pm=True, pass_context=True)
+    @checks.admin_or_permissions(manage_roles=True)
+    async def whoowns(self, ctx, rolename, position : int):
+        """Lists owner of the server."""
+        server = ctx.message.server
+        await self.bot.say("The owner of the server is " + server.owner.mention)	
         
     @commands.command(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
@@ -179,6 +186,7 @@ class Admin:
                 break
             except (IndexError, ValueError, AttributeError):
                 pass
+				
 
     @commands.group(pass_context=True, no_pm=True)
     async def adminset(self, ctx):
