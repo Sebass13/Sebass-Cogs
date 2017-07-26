@@ -153,7 +153,31 @@ class Admin:
             await self.bot.say('I don\'t have manage_roles.')
             return
         
-        await self.bot.say('Current position of {}: {}'.format(role.name, role.position))        
+        await self.bot.say('Current position of {}: {}'.format(role.name, role.position))  
+        
+    @commands.command(no_pm=False, pass_context=True)
+    @checks.is_owner()
+    async def serverinvite(self, ctx):
+        """Lists and creates invite links for servers"""
+        owner = ctx.message.author
+        servers = sorted(list(self.bot.servers),
+                         key=lambda s: s.name.lower())
+        msg = ""
+        for i, server in enumerate(servers):
+            msg += "{}: {}\n".format(i, server.name)
+        msg += "\nTo get an invite link for a server just type its number."
+
+        for page in pagify(msg, ['\n']):
+            await self.bot.say(page)
+
+        while msg is not None:
+            msg = await self.bot.wait_for_message(author=owner, timeout=15)
+            try:
+                msg = int(msg.content)
+                await self.create_invite(servers[msg])
+                break
+            except (IndexError, ValueError, AttributeError):
+                pass
 
     @commands.group(pass_context=True, no_pm=True)
     async def adminset(self, ctx):
