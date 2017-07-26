@@ -135,7 +135,7 @@ class Admin:
         
     @commands.command(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
-    async def roleposition(self, ctx, rolename, position):
+    async def roleposition(self, ctx, rolename):
         """Checks a role's position
 
         Role name must be in quotes if there are spaces."""
