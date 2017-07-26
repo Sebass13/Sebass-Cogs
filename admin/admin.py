@@ -152,7 +152,7 @@ class Admin:
             await self.bot.say('I don\'t have manage_roles.')
             return
         
-       await self.bot.say('Current position of {}: {}'.format(role.name, role.position))        
+        await self.bot.say('Current position of {}: {}'.format(role.name, role.position))        
 
     @commands.group(pass_context=True, no_pm=True)
     async def adminset(self, ctx):
