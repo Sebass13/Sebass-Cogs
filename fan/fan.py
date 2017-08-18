@@ -25,3 +25,6 @@ class Fan:
             await self.bot.say("The fan is already " + mode.lower() + "!")
         else:
             _toggle_fan()
+            
+def setup(bot):
+    bot.add_cog(Fan(bot))
