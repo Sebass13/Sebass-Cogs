@@ -11,23 +11,19 @@ class Fan:
     
     def __init__(self, bot):
         self.bot = bot
-        self.fan = SmartPlug("192.168.0.175")
+        self.plug = SmartPlug("192.168.0.175")
         
-    @commands.group(pass_context=True)
+    @commands.command()
     async def fan(self, *, mode: str = "toggle"):
         if mode.upper() == fan.state:
             await self.bot.say("The fan is already " + mode.lower() + "!")
         else:
-            if fan.state == "OFF":
-                fan.turn_on()
+            if plug.state == "OFF":
+                plug.turn_on()
             else:
-                fan.turn_off()
+                plug.turn_off()
             await self.bot.say("The fan is now " + mode.lower() + "!")
             
-    @commands.command(hidden=True)
-    async def pang(self, *, mode : str = "haha"):
-        """Pong."""
-        await self.bot.say(mode)
             
 def setup(bot):
     bot.add_cog(Fan(bot))
