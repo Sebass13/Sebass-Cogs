@@ -24,7 +24,5 @@ class Fan:
                 fan.turn_off()
             await self.bot.say("The fan is now " + mode.lower() + "!")
             
-    @commands.command()
-            
 def setup(bot):
     bot.add_cog(Fan(bot))
