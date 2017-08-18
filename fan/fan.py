@@ -27,7 +27,7 @@ class Fan:
     @commands.command(hidden=True)
     async def pang(self, *, mode : str = "haha"):
         """Pong."""
-        await self.bot.say(str)
+        await self.bot.say(mode)
             
 def setup(bot):
     bot.add_cog(Fan(bot))
