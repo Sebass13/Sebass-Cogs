@@ -22,6 +22,6 @@ class Fan:
     @commands.command()
     async def fan(self, mode: str = "toggle"):
         if mode.upper() == fan.state:
-            await.bot.say("The fan is already " + mode.lower() + "!")
+            await self.bot.say("The fan is already " + mode.lower() + "!")
         else:
             _toggle_fan()
