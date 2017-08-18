@@ -22,7 +22,7 @@ class Fan:
                 self.plug.turn_on()
             else:
                 self.plug.turn_off()
-            await self.bot.say("The fan is now " + mode.lower() + "!")
+            await self.bot.say("The fan is now " + self.plug.state.lower() + "!")
             
             
 def setup(bot):
