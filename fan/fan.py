@@ -13,7 +13,7 @@ class Fan:
         self.bot = bot
         self.fan = SmartPlug("192.168.0.175")
         
-    @commands.command()
+    @commands.group(pass_context=True)
     async def fan(self, *, mode: str = "toggle"):
         if mode.upper() == fan.state:
             await self.bot.say("The fan is already " + mode.lower() + "!")
@@ -23,6 +23,11 @@ class Fan:
             else:
                 fan.turn_off()
             await self.bot.say("The fan is now " + mode.lower() + "!")
+            
+    @commands.command(hidden=True)
+    async def pang(self):
+        """Pong."""
+        await self.bot.say("Dang.")
             
 def setup(bot):
     bot.add_cog(Fan(bot))
