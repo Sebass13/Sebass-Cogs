@@ -20,7 +20,7 @@ class Fan:
         self.fan = SmartPlug("192.168.0.175")
         
     @commands.command()
-    async def fan(self, mode: str = "toggle"):
+    async def fan(self, *, mode: str = "toggle"):
         if mode.upper() == fan.state:
             await self.bot.say("The fan is already " + mode.lower() + "!")
         else:
