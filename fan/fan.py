@@ -16,7 +16,7 @@ class Fan:
         self.fan_on = True
         
     @commands.command()
-    async def fan(self, ctx, *, mode: str = "toggle"):
+    async def fan(self, ctx, mode: str = "toggle"):
         await self.bot.say(ctx)
         if not self.fan_on and not (ctx.message.author.id == self.bot.settings.owner):
             await self.bot.say("The fan's state can not currently be changed.")
