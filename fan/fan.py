@@ -31,7 +31,7 @@ class Fan:
             await self.bot.say("The fan is now " + self.plug.state.lower() + "!")
             
     @commands.command()
-    @checks.is_owner)
+    @checks.is_owner()
     async def yesfan(self)
         self.fan_on = True
         await self.bot.say("Fan powers enabled!")
