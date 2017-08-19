@@ -37,7 +37,7 @@ class Fan:
         await self.bot.say("Fan powers enabled!")
         
     @commands.command()
-    @checks.is_owner)
+    @checks.is_owner()
     async def nofan(self)
         self.fan_on = False  
         await self.bot.say("Fan powers disabled!")
