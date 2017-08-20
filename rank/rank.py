@@ -5,7 +5,7 @@ from cogs.utils.dataIO import dataIO
 import os
 import logging
 #will be installed due to info.json
-import rocket_snake as rs
+import requests
 from steam import steamid
 #Debugging
 from time import time
@@ -53,7 +53,8 @@ class Rank:
         await self.bot.say("Credentials set.")
 
     async def get_rank(self, SteamID64, playlist):
-        client = rs.RLS_Client(self.settings["key"])
+        self.settings["key"]
+        url = 'https://api.rocketleaguestats.com/v1/'
         playlist = playlist.lower()
         playlists = {'1v1': '10',
                      'duel': '10',
@@ -62,20 +63,18 @@ class Rank:
                      'solo standard': '12',
                      '3v3': '13',
                      'standard': '13'}
-        if (playlist not in playlists):
+        if (playlist not in playlists):s
             await self.bot.say("Please enter a valid playlist!")
             return
         else:
             playlist_id = playlists.get(playlist)
-        start_time = time()
-        me = await client.get_player(SteamID64, rs.constants.STEAM)
-        await self.bot.say(time() - start_time)
-        seasons = me.ranked_seasons
+        player = requests.get(url + 'player', params={'apikey' : key, 'platform_id' : "1", 'unique_id' : steamID}).json()
+        seasons = player['rankedSeasons']
         current_season = seasons.get(max(seasons.keys()))
         playlist_rank = current_season.get(playlist_id)
-        tier = playlist_rank.tier
-        division = playlist_rank.division
-        tiers = await client.get_tiers()
+        tier = playlist_rank['tier']
+        division = playlist_rank['division']
+        tiers = requests.get(url + 'data/tiers', params={'apikey' : key}).json()
         if tier == 0:
             return "Unranked"
         else:
