@@ -13,12 +13,11 @@ from time import time
 log = logging.getLogger('red.ranks')
 
 def _parse_steam(input):
-    if "steamcommunity.com" in input:
-        return str(steamid.steam64_from_url(input))
-    elif input.isdigit():
-        return input
+    if input.isdigit():
+        url = "https://steamcommunity.com/profiles/" + input
     else:
-        return None
+        url = "https://steamcommunity.com/id/" + input.split('/id/')[-1]
+    return str(steamid.steam64_from_url(url))
 
 class Rank:
     """Check Rocket League Rank with this cog."""
@@ -33,8 +32,15 @@ class Rank:
         """Check your rank in Rocket League"""
         author = ctx.message.author
         channel = ctx.message.channel
-        try:
+        if steam == "me":
+            SteamID64 = self.settings['SteamID64'].get(author.id)
+            if SteamID64 is None:
+                prefix = self.bot.settings.bot_settings.get('PREFIXES')[0]
+                await self.bot.say("No SteamID found, set it using {}setsteam".format(prefix))
+        else:
             SteamID64 = _parse_steam(steam)
+        try:
+            await self.bot.send_typing(channel)
             rank = await self.get_rank(SteamID64, playlist)
             await self.bot.say("Your rank is: " + rank)
         except Exception as e:
@@ -52,8 +58,19 @@ class Rank:
         dataIO.save_json(self.file_path, self.settings)
         await self.bot.say("Credentials set.")
 
+    @commands.command(pass_context = True)
+    async def setsteam(self, ctx, steam):
+        """Link your Steam Account to your Discord"""
+        author = ctx.message.author
+        SteamID64 = _parse_steam(steam)
+        if SteamID64 is None:
+            await self.bot.say("Invalid input, SteamID not set.")
+            return
+        self.settings['SteamID64'][author.id] = SteamID64
+        dataIO.save_json(self.file_path, self.settings)
+        await self.bot.say("SteamID set.")
+
     async def get_rank(self, SteamID64, playlist):
-        self.settings["key"]
         url = 'https://api.rocketleaguestats.com/v1/'
         playlist = playlist.lower()
         playlists = {'1v1': '10',
@@ -63,22 +80,22 @@ class Rank:
                      'solo standard': '12',
                      '3v3': '13',
                      'standard': '13'}
-        if (playlist not in playlists):s
+        if (playlist not in playlists):
             await self.bot.say("Please enter a valid playlist!")
             return
         else:
             playlist_id = playlists.get(playlist)
-        player = requests.get(url + 'player', params={'apikey' : key, 'platform_id' : "1", 'unique_id' : steamID}).json()
+        player = requests.get(url + 'player', params={'apikey' : self.settings["key"], 'platform_id' : "1", 'unique_id' : SteamID64}).json()
         seasons = player['rankedSeasons']
         current_season = seasons.get(max(seasons.keys()))
         playlist_rank = current_season.get(playlist_id)
         tier = playlist_rank['tier']
         division = playlist_rank['division']
-        tiers = requests.get(url + 'data/tiers', params={'apikey' : key}).json()
+        tiers = requests.get(url + 'data/tiers', params={'apikey' : self.settings["key"]}).json()
         if tier == 0:
             return "Unranked"
         else:
-            return "{} Division {}".format(tiers[tier].name, division+1)
+            return "{} Division {}".format(tiers[tier].get('tierName'), division+1)
 
 
 
@@ -92,7 +109,7 @@ def check_file():
     f = 'data/rank/settings.json'
     if dataIO.is_valid_json(f) is False:
         log.debug('Creating json: settings.json')
-        dataIO.save_json(f, {})
+        dataIO.save_json(f, {'SteamID64' : {}})
 
 def setup(bot):
     check_folder()
