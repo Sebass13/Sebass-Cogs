@@ -10,7 +10,7 @@ from steam import steamid
 #Debugging
 from time import time
 
-log = logging.getLogger('red.ranks')
+log = logging.getLogger('red.rank')
 
 def _parse_steam(input):
     if input.isdigit():
@@ -27,7 +27,7 @@ class Rank:
         self.file_path = "data/rank/settings.json"
         self.settings = dataIO.load_json(self.file_path)
 
-    @commands.group(no_pm=True, invoke_without_command=True, pass_context=True)
+    @commands.group(invoke_without_command=True, pass_context=True)
     async def rank(self, ctx, steam, *, playlist):
         """Check your rank in Rocket League"""
         author = ctx.message.author
