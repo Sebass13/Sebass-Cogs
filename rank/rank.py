@@ -35,8 +35,8 @@ class Rank:
         if steam == "me":
             SteamID64 = self.settings['SteamID64'].get(author.id)
             if SteamID64 is None:
-                prefix = self.bot.settings.bot_settings.get('PREFIXES')[0]
-                await self.bot.say("No SteamID found, set it using {}setsteam".format(prefix))
+                await self.bot.say("No SteamID found, "
+                                   "set it using {p}setsteam".format(p=ctx.prefix))
         else:
             SteamID64 = _parse_steam(steam)
         try:
