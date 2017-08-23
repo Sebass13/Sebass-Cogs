@@ -1,0 +1,10 @@
+{
+    "AUTHOR" : "Sebass",
+    "INSTALL_MSG" : "Use [p]wolfram AppID to set your AppID",
+    "NAME" : "WolframAlpha",
+    "SHORT" : "Parses WolframAlpha queries",
+    "DESCRIPTION" : "A cog to query WolframAlpha and return text and pictures from the result.",
+    "TAGS" : ["WolframAlpha", "Wolfram", "Alpha"],
+    "REQUIREMENTS" : ["wolframalpha"],
+    "HIDDEN" : false
+}
