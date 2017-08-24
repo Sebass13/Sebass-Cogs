@@ -20,6 +20,8 @@ class Fan:
     @commands.group(pass_context = True)
     async def fan(self, ctx):
         """Manage your fan"""
+        if ctx.invoked_subcommand is None:
+            await send_cmd_help(ctx)
     
     @fan.command(pass_context = True)
     async def on(self, ctx):
