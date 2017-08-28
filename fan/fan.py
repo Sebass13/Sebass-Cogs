@@ -59,6 +59,11 @@ class Fan:
 
         self.toggle_plug()
         await self.bot.say("The fan is now {}!".format(self.plug.state.lower()))
+        
+    @fan.command(pass_context = True)
+    async def status(self, ctx):
+        """Check the fan's state."""
+        await self.bot.say("The fan is currently {}.".format(self.plug.state.lower()))
 
     @fan.command()
     @checks.is_owner()
