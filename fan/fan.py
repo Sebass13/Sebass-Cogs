@@ -1,45 +1,82 @@
 import discord
 from discord.ext import commands
 from .utils import checks
-
-try:
-    from pyHS100 import SmartPlug
-except Exception as e:
-    raise RuntimeError("You must run `pip3 install pyHS100`.") from e
+from __main__ import send_cmd_help
+from pyHS100 import SmartPlug
     
 class Fan:
     """Turn on my fan!"""
     
     def __init__(self, bot):
         self.bot = bot
-        self.plug = SmartPlug("192.168.0.175")
-        self.fan_on = True
-        
-    @commands.command(pass_context = True)
-    async def fan(self, ctx, *, mode: str = "toggle"):
-        if not self.fan_on and not (ctx.message.author.id == self.bot.settings.owner):
-            await self.bot.say("The fan's state can not currently be changed.")
-            return
-        
-        if mode.upper() == self.plug.state:
-            await self.bot.say("The fan is already " + mode.lower() + "!")
+        self.plug = SmartPlug("192.168.0.175") #Change to the IP of your fan's Smart Plug.
+        self.fan_enabled = True
+
+    def toggle_plug(self):
+        if self.plug.is_off:
+            self.plug.turn_on()
         else:
-            if self.plug.state == "OFF":
-                self.plug.turn_on()
-            else:
-                self.plug.turn_off()
-            await self.bot.say("The fan is now " + self.plug.state.lower() + "!")
-            
-    @commands.command()
+            self.plug.turn_off()
+        
+    @commands.group(pass_context = True)
+    async def fan(self, ctx):
+        """Manage your fan"""
+        if ctx.invoked_subcommand is None:
+            await send_cmd_help(ctx)
+    
+    @fan.command(pass_context = True)
+    async def on(self, ctx):
+        """Turn it on!"""
+        if not self.fan_enabled and not checks.is_owner_check(ctx):
+            await self.bot.say("The fan's state currently cannot be changed.")
+            return
+
+        if self.plug.is_on:
+            await self.bot.say("The fan is already on!")
+        else:
+            self.toggle_plug()
+            await self.bot.say("The fan is now on!")
+
+    @fan.command(pass_context = True)
+    async def off(self, ctx):
+        """Turn it off!"""
+        if not self.fan_enabled and not checks.is_owner_check(ctx):
+            await self.bot.say("The fan's state currently cannot be changed.")
+            return
+
+        if self.plug.is_off:
+            await self.bot.say("The fan is already off!")
+        else:
+            self.toggle_plug()
+            await self.bot.say("The fan is now off!")
+
+    @fan.command(pass_context = True)
+    async def toggle(self, ctx):
+        """Toggle its state!"""
+        if not self.fan_enabled and not checks.is_owner_check(ctx):
+            await self.bot.say("The fan's state currently cannot be changed.")
+            return
+
+        self.toggle_plug()
+        await self.bot.say("The fan is now {}!".format(self.plug.state.lower()))
+        
+    @fan.command(pass_context = True)
+    async def status(self, ctx):
+        """Check the fan's state."""
+        await self.bot.say("The fan is currently {}.".format(self.plug.state.lower()))
+
+    @fan.command()
     @checks.is_owner()
-    async def yesfan(self):
-        self.fan_on = True
+    async def enable(self):
+        """Enable use of the fan by anyone."""
+        self.fan_enabled = True
         await self.bot.say("Fan powers enabled!")
         
-    @commands.command()
+    @fan.command()
     @checks.is_owner()
-    async def nofan(self):
-        self.fan_on = False  
+    async def disable(self):
+        """Disable use of the fan by anyone but yourself."""
+        self.fan_enabled = False  
         await self.bot.say("Fan powers disabled!")
             
 def setup(bot):
