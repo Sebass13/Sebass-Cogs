@@ -36,7 +36,7 @@ class Penis:
         dong = "8{}D".format("=" * random.randint(0, 30))
         random.setstate(state)
         await self.bot.say("Size: " + dong)
-        awwait self.bot.say(type(user))
+        await self.bot.say(type(user))
         
 
 
