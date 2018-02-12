@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import requests
+import aiohttp
 
 class CatFact:
     """Penis related commands."""
@@ -11,7 +11,8 @@ class CatFact:
     @commands.command()
     async def catfact(self):
         """Random Cat Facts!"""
-        fact = requests.get(r'https://catfact.ninja/fact').json()['fact']
+        async with aiohttp.get(r'https://catfact.ninja/fact') as r:
+            fact = await r.json()['fact']
         await self.bot.say(fact)
 
 def setup(bot):
