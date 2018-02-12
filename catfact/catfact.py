@@ -9,7 +9,7 @@ class CatFact:
         self.bot = bot
 
     @commands.command()
-    async def catfact(self, *, user : discord.Member):
+    async def catfact(self):
         """Random Cat Facts!"""
         fact = requests.get(r'https://catfact.ninja/fact').json()['fact']
         await self.bot.say(fact)
