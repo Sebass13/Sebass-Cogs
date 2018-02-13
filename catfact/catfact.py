@@ -12,7 +12,8 @@ class CatFact:
     async def catfact(self):
         """Random Cat Facts!"""
         async with aiohttp.get(r'https://catfact.ninja/fact') as r:
-            fact = await r.json()['fact']
+            res = await r.json()
+        fact = res['fact']
         await self.bot.say(fact)
 
 def setup(bot):
