@@ -312,7 +312,7 @@ class MazeCog:
             if choice is None:
                 await self.bot.say("Inactive for 2 minutes, game has concluded.")
                 for em in reversed(list(choices)):
-                    self.bot.remove_reaction(msgobj, em)
+                    self.bot.remove_reaction(msgobj, em, ctx.message.server.me)
                 return
             if choice == "exit":
                 await self.bot.delete_message(msgobj)
