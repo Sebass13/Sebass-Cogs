@@ -281,6 +281,7 @@ import asyncio
 from discord.ext import commands
 from cogs.utils.chat_formatting import box
 from __main__ import send_cmd_help
+from collections import OrderedDict
 
 class MazeCog:
     def __init__(self, bot):
@@ -300,11 +301,11 @@ class MazeCog:
         author = ctx.message.author
         maze = Maze.generate(width, height)
         msgobj = await self.bot.say(box(maze))
-        choices = {"\u25c0": (W, -1, 0),
-                   "\U0001f53c": (N, 0, -1),
-                   "\U0001f53d": (S, 0, 1),
-                   "\u25b6": (E, 1, 0),
-                   "\u274c": "exit"}
+        choices = OrderedDict({"\u25c0": (W, -1, 0),
+                               "\U0001f53c": (N, 0, -1),
+                               "\U0001f53d": (S, 0, 1),
+                               "\u25b6": (E, 1, 0),
+                               "\u274c": "exit"})
         
         for em in choices:
             await self.bot.add_reaction(msgobj, em)
@@ -314,7 +315,7 @@ class MazeCog:
             choice = await wait_for_interaction(self.bot, msgobj, author, choices)
             if choice is None:
                 await self.bot.say("Inactive for 2 minutes, game has concluded.")
-                for em in reversed(list(choices)):
+                for em in reversed(choices):
                     await self.bot.remove_reaction(msgobj, em, ctx.message.server.me)
                 return
             if choice == "exit":
