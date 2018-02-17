@@ -301,11 +301,11 @@ class MazeCog:
         author = ctx.message.author
         maze = Maze.generate(width, height)
         msgobj = await self.bot.say(box(maze))
-        choices = OrderedDict({"\u25c0": (W, -1, 0),
-                               "\U0001f53c": (N, 0, -1),
-                               "\U0001f53d": (S, 0, 1),
-                               "\u25b6": (E, 1, 0),
-                               "\u274c": "exit"})
+        choices = OrderedDict((("\u25c0",    (W, -1, 0)),
+                               ("\U0001f53c", (N, 0, -1)),
+                               ("\U0001f53d", (S, 0, 1)),
+                               ("\u25b6",     (E, 1, 0)),
+                               ("\u274c",     "exit")))
         
         for em in choices:
             await self.bot.add_reaction(msgobj, em)
