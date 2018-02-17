@@ -309,7 +309,6 @@ class MazeCog:
         
         for em in choices:
             await self.bot.add_reaction(msgobj, em)
-            await self.bot.say(list(choices))
         
         choice = True
         while maze.player != maze.target:
