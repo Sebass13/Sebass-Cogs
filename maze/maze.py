@@ -294,6 +294,9 @@ class MazeCog:
             await send_cmd_help(ctx)
             return
         
+        if width <= 1 or height <= 1:
+            await self.bot.say("That's an insta-win for you! Good job buddy.")
+        
         author = ctx.message.author
         maze = Maze.generate(width, height)
         msgobj = await self.bot.say(box(maze))
