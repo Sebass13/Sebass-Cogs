@@ -1,7 +1,6 @@
 import discord
 import random
 from discord.ext import commands
-from typing import overload
 
 class Penis:
     """Penis related commands."""
@@ -24,21 +23,6 @@ class Penis:
             await self.bot.say("`Error: Penis not found for ID#" + user.id + "`")
         else:
             await self.bot.say("Size: " + dong)
-    
-    
-    @commands.command()
-    async def benis(self, *, user):
-        """Detects user's penis length
-
-        This is 100% accurate."""
-        state = random.getstate()
-        random.seed(user)
-        dong = "8{}D".format("=" * random.randint(0, 30))
-        random.setstate(state)
-        await self.bot.say("Size: " + dong)
-        await self.bot.say(type(user))
-        
-
 
 def setup(bot):
     bot.add_cog(Penis(bot))
