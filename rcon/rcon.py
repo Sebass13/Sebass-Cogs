@@ -141,6 +141,9 @@ class RCON:
             await self.bot.say("Could not communicate with server, connection now closed.")
             del self.active_rcon[ctx.message.channel]
         msg = res.text
+        if not msg:
+            await self.bot.say("`Command received, no response`")
+            return
         result = list(pagify(msg, shorten_by=16))
 
         for i, page in enumerate(result):
