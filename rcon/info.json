@@ -1,0 +1,10 @@
+{
+    "AUTHOR" : "Sebass",
+    "INSTALL_MSG" : "Use [p]server add to add your RCON server",
+    "NAME" : "RCON",
+    "SHORT" : "Connect to Servers via RCON",
+    "DESCRIPTION" : "A cog to connect to RCON servers from within your Discord Channel.",
+    "TAGS" : ["RCON", "Valve", "Remote Console", "Server", "TF2", "Rust", "CS:GO"],
+    "REQUIREMENTS" : ["python-valve"],
+    "HIDDEN" : false
+}
