@@ -124,6 +124,7 @@ class RCON:
         rcon = self.active_rcon[ctx.message.channel]
         await self.bot.loop.run_in_executor(None, rcon.close)
         del self.active_rcon[ctx.message.channel]
+        await self.bot.say("The RCON connection has been closed.")
 
     @commands.command(pass_context=True)
     @checks.is_owner()
