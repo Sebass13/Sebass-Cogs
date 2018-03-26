@@ -218,7 +218,7 @@ class RCON:
     """Connect to Servers via RCON"""
     def __unload(self):
         for rcon in self.active_rcon.values():
-            self.bot.loop.create_task(rcon.disconnect())
+            rcon.disconnect()
 
     def __init__(self, bot):
         self.bot = bot
@@ -323,7 +323,7 @@ class RCON:
             await self.say(ctx, "No RCON is active in the channel; use `{}server connect`.".format(ctx.prefix))
             return
         rcon = self.active_rcon[ctx.message.channel]
-        await rcon.disconnect()
+        rcon.disconnect()
         del self.active_rcon[ctx.message.channel]
         await self.say(ctx, "The RCON connection has been closed.")
 
