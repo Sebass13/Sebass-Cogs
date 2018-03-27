@@ -211,7 +211,7 @@ log = logging.getLogger('red.rcon')
 
 class Address(commands.Converter):
     def convert(self):
-        IP, port = self.argument.split()
+        IP, port = self.argument.split(':')
         return IP, int(port)
 
 class RCON:
