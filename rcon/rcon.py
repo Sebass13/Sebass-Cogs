@@ -268,9 +268,9 @@ class RCON:
             res = res.strip()
             if not res or (res in ["Server received, But no response!!"]):
                 return
-            result = list(pagify(res, shorten_by=16))
+            result = list(pagify(res))
             for page in result:
-                await self.bot.send_message(channel, box(page, lang="LDIF"))
+                await self.bot.send_message(channel, page)
 
 
     async def intervalled(self):
