@@ -185,7 +185,7 @@ class SourceRcon(object):
             commands = filter(f, commands)
             results = []
             for command in commands:
-                result = await self.rcon(command)
+                result = await self.execute(command)
                 results.append(result)
             return "".join(results)
 
@@ -198,32 +198,87 @@ class SourceRcon(object):
         self.send(SERVERDATA_EXECCOMMAND, command)
         return (await self.receive()).decode()
 #</editor-fold>
+import discord
 from discord.ext import commands
 from .utils import checks
 from .utils.chat_formatting import pagify, box
 from cogs.utils.dataIO import dataIO
+from collections import namedtuple
 import os
 import logging
+import contextlib
 from __main__ import send_cmd_help
 
 file_path = "data/rcon/settings.json"
 log = logging.getLogger('red.rcon')
 
+
 class Address(commands.Converter):
     def convert(self):
-        IP, port = self.argument.split(':')
+        IP, port = self.argument.split()
         return IP, int(port)
+
+
+class RCONContainer:
+    def __init__(self, rcon, autoreconnect, chatenabled):
+        self.rcon = rcon
+        self.autoreconnect = autoreconnect
+        self.chatenabled = chatenabled
+
+
 
 class RCON:
     """Connect to Servers via RCON"""
     def __unload(self):
         for rcon in self.active_rcon.values():
-            rcon.disconnect()
+            rcon.rcon.disconnect()
+        if self.task:
+            self.task.cancel()
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.json = dataIO.load_json(file_path)
         self.active_rcon = {}
+        self.task = self.bot.loop.create_task(self.intervalled())
+
+    async def on_message(self, message: discord.Message):
+        prefixes = await self.bot._get_prefix(message)
+        if any(message.content.startswith(prefix) for prefix in prefixes):
+            return
+        if message.author == self.bot.user:
+            return
+        if message.channel in self.active_rcon and self.active_rcon[message.channel].chatenabled:
+            try:
+                self.bot.delete_message(message)
+            except discord.Forbidden:
+                pass
+            rcon = self.active_rcon[message.channel].rcon
+            sendchatcommand = self.active_rcon[message.channel].chatenabled[1]
+            await rcon.execute("{} {}".format(sendchatcommand, message.content.rstrip()))
+            await self.chat_update()
+
+    async def chat_update(self):
+        for channel, rc in self.active_rcon.items():
+            rcon = rc.rcon
+            chat = rc.chatenabled
+            if not chat:
+                continue
+            rcon = self.active_rcon[channel].rcon
+            receivechatcommand = self.active_rcon[channel].chatenabled[0]
+            res = await rcon.execute(receivechatcommand)
+            res = res.rstrip()
+            if not res:
+                return
+            result = list(pagify(res, shorten_by=16))
+            for page in result:
+                await self.bot.send_message(channel, box(page, lang="LDIF"))
+
+
+    async def intervalled(self):
+        with contextlib.suppress(asyncio.CancelledError):
+            while self == self.bot.get_cog("RCON"):
+                await self.chat_update()
+                await asyncio.sleep(1)
 
     @commands.group(pass_context=True)
     async def server(self, ctx):
@@ -231,26 +286,22 @@ class RCON:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    async def say(self, ctx, *args, **kwargs):
-        """A stronger version of self.bot.say that is used because of the run_in_executor."""
-        return await self.bot.send_message(ctx.message.channel, *args, **kwargs)
-
     @server.command(pass_context=True)
-    @checks.is_owner()
+    @checks.admin()
     async def add(self, ctx, address: Address, password: str, name: str):
         """Adds and names a server's RCON.
 
         Use this command in direct message to keep your
         password secret."""
         if name in self.json:
-            await self.say(ctx, "A server with the name {} already exists, please choose a different name.".format(name))
+            await self.bot.say("A server with the name {} already exists, please choose a different name.".format(name))
             return
         self.json[name] = {"IP":address[0], "port":address[1], "PW":password}
         dataIO.save_json(file_path, self.json)
-        await self.say(ctx, "Server added.")
+        await self.bot.say("Server added.")
 
     @server.command(pass_context=True)
-    @checks.is_owner()
+    @checks.admin()
     async def list(self, ctx, passwords_visible:bool=False):
         """Lists all servers.
 
@@ -265,83 +316,93 @@ class RCON:
             servers.append(server)
         msg = "\n".join(servers)
         for page in pagify(msg, shorten_by=16):
-            await self.say(ctx, box(page))
+            await self.bot.say(box(page))
 
     @server.command(pass_context=True)
-    @checks.is_owner()
+    @checks.admin()
     async def remove(self, ctx, name: str):
         """Removes a server by name."""
         if name not in self.json:
-            await self.say(ctx, "There are no servers named {}, check "
+            await self.bot.say("There are no servers named {}, check "
                                "`{}server list` for all servers.".format(name, ctx.prefix))
             return
         del self.json[name]
         dataIO.save_json(file_path, self.json)
-        await self.say(ctx, "Server removed.")
+        await self.bot.say("Server removed.")
 
     @server.command(pass_context=True, no_pm=True)
-    @checks.is_owner()
-    async def connect(self, ctx, name):
+    @checks.admin()
+    async def connect(self, ctx, name: str, autoreconnect: bool=False):
         """Sets the active RCON in this channel."""
         if name not in self.json:
-            await self.say(ctx, "There are no servers named {}, check "
-                               "`{}server list` for all servers.".format(name, ctx.prefix))
+            await self.bot.say("There are no servers named {}, check "
+                           "`{}server list` for all servers.".format(name, ctx.prefix))
             return
         if ctx.message.channel in self.active_rcon:
-            await self.say(ctx, "There is already an active RCON in this channel.")
+            await self.bot.say("There is already an active RCON in this channel.")
             return
         server = self.json[name]
         rcon = SourceRcon(server["IP"], server["port"], server["PW"], timeout=5.0, loop=self.bot.loop)
         try:
             await rcon.connect()
         except (ConnectionRefusedError, TimeoutError, OSError):
-            await self.say(ctx, "Connection failed, ensure the IP/port is correct and that the server is running.")
+            await self.bot.say("Connection failed, ensure the IP/port is correct and that the server is running.")
             return
         except Exception as e:
-            await self.say(ctx, "An unexpected error has occured: %s" % e)
+            await self.bot.say("An unexpected error has occured: %s" % e)
             return
 
         try:
             await rcon.authenticate()
         except SourceRconError as e:
-            await self.say(ctx, e)
+            await self.bot.say(e)
             return
         except Exception as e:
-            await self.say(ctx, "An unexpected error has occured: %s" % e)
+            await self.bot.say("An unexpected error has occured: %s" % e)
             return
 
         assert rcon.authenticated
-        await self.say(ctx, "The server is now active in this channel. "
-                           "Use `{}rcon` in this channel to execute commands".format(ctx.prefix))
-        self.active_rcon[ctx.message.channel] = rcon
+        await self.bot.say("The server is now active in this channel. "
+                       "Use `{}rcon` in this channel to execute commands".format(ctx.prefix))
+        self.active_rcon[ctx.message.channel] = RCONContainer(rcon, autoreconnect, False)
 
     @server.command(pass_context=True, no_pm=True)
-    @checks.is_owner()
+    @checks.admin()
     async def disconnect(self, ctx):
         """Closes the RCON connection in the channel."""
         if ctx.message.channel not in self.active_rcon:
-            await self.say(ctx, "No RCON is active in the channel; use `{}server connect`.".format(ctx.prefix))
+            await self.bot.say("No RCON is active in the channel; use `{}server connect`.".format(ctx.prefix))
             return
-        rcon = self.active_rcon[ctx.message.channel]
+        rcon = self.active_rcon[ctx.message.channel].rcon
         rcon.disconnect()
         del self.active_rcon[ctx.message.channel]
-        await self.say(ctx, "The RCON connection has been closed.")
+        await self.bot.say("The RCON connection has been closed.")
+
+    @server.command(pass_context=True, no_pm=True)
+    @checks.admin()
+    async def chat(self, ctx, enabled: bool, receivechatcommand=None, sendchatcommand=None):
+        """Enables/disables live chat for the RCON connection in the channel."""
+        if ctx.message.channel not in self.active_rcon:
+            await self.bot.say("No RCON is active in the channel; use `{}server connect`.".format(ctx.prefix))
+            return
+        self.active_rcon[ctx.message.channel].chatenabled = (receivechatcommand, sendchatcommand) if enabled else False
+        await self.bot.say("Live chat is now {}.".format(['disabled', 'enabled'][enabled]))
 
     @commands.command(pass_context=True)
-    @checks.is_owner()
+    @checks.mod()
     async def rcon(self, ctx, *, command: str):
         """Executes a command in the active RCON on the channel."""
         if ctx.message.channel not in self.active_rcon:
-            await self.say(ctx, "No RCON is active in the channel, use `{}server connect`.".format(ctx.prefix))
+            await self.bot.say("No RCON is active in the channel, use `{}server connect`.".format(ctx.prefix))
             return
-        rcon = self.active_rcon[ctx.message.channel]
+        rcon = self.active_rcon[ctx.message.channel].rcon
         try:
             res = await rcon.execute(command)
         except TimeoutError:
-            await self.say(ctx, "Response expected but none received.")
+            await self.bot.say("Response expected but none received.")
             return
         except SourceRconError as e:
-            await self.say(ctx, e)
+            await self.bot.say(e)
             del self.active_rcon[ctx.message.channel]
             return
         res = res.rstrip()
@@ -349,7 +410,7 @@ class RCON:
 
         for i, page in enumerate(result):
             if i != 0 and i % 4 == 0:
-                last = await self.say(ctx, "There are still {} messages. "
+                last = await self.bot.say("There are still {} messages. "
                                           "Type `more` to continue."
                                           "".format(len(result) - (i+1)))
                 msg = await self.bot.wait_for_message(author=ctx.message.author,
@@ -363,7 +424,7 @@ class RCON:
                         pass
                     finally:
                         break
-            await self.say(ctx, box(page, lang="LDIF"))
+            await self.bot.say(box(page, lang="LDIF"))
 
 
 def check_folder():
