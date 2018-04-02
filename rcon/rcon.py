@@ -266,8 +266,8 @@ class RCON:
             rcon = self.active_rcon[channel].rcon
             receivechatcommand = self.active_rcon[channel].chatenabled[0]
             res = await rcon.execute(receivechatcommand)
-            res = res.rstrip()
-            if not res:
+            res = res.strip()
+            if not res or (res in ["Server received, But no response!!"]):
                 return
             result = list(pagify(res, shorten_by=16))
             for page in result:
