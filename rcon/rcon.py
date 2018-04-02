@@ -203,11 +203,13 @@ from discord.ext import commands
 from .utils import checks
 from .utils.chat_formatting import pagify, box
 from cogs.utils.dataIO import dataIO
-from collections import namedtuple
 import os
 import logging
 import contextlib
 from __main__ import send_cmd_help
+import traceback
+import sys
+
 
 file_path = "data/rcon/settings.json"
 log = logging.getLogger('red.rcon')
@@ -224,7 +226,6 @@ class RCONContainer:
         self.rcon = rcon
         self.autoreconnect = autoreconnect
         self.chatenabled = chatenabled
-
 
 
 class RCON:
@@ -254,7 +255,11 @@ class RCON:
                 pass
             rcon = self.active_rcon[message.channel].rcon
             sendchatcommand = self.active_rcon[message.channel].chatenabled[1]
-            await rcon.execute("{} {}".format(sendchatcommand, message.content.rstrip()))
+            try:
+                await rcon.execute("{} {}: {}".format(sendchatcommand, message.author.name, message.content.rstrip()))
+            except Exception as e:
+                await self.bot.send_message(message.channel, traceback.format_exc())
+                await self.bot.send_message(message.channel, sys.exc_info()[0])
             await self.chat_update()
 
     async def chat_update(self):
@@ -271,7 +276,6 @@ class RCON:
             result = list(pagify(res))
             for page in result:
                 await self.bot.send_message(channel, page)
-
 
     async def intervalled(self):
         with contextlib.suppress(asyncio.CancelledError):
