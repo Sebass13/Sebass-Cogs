@@ -249,7 +249,7 @@ class RCON:
             return
         if message.channel in self.active_rcon and self.active_rcon[message.channel].chatenabled:
             try:
-                self.bot.delete_message(message)
+                await self.bot.delete_message(message)
             except discord.Forbidden:
                 pass
             rcon = self.active_rcon[message.channel].rcon
@@ -263,7 +263,6 @@ class RCON:
             chat = rc.chatenabled
             if not chat:
                 continue
-            rcon = self.active_rcon[channel].rcon
             receivechatcommand = self.active_rcon[channel].chatenabled[0]
             res = await rcon.execute(receivechatcommand)
             res = res.strip()
