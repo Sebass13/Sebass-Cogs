@@ -12,6 +12,7 @@ import sys
 import asyncio
 import aiorcon
 from collections import namedtuple
+import ast
 from aiorcon.exceptions import *
 
 
@@ -23,6 +24,8 @@ class Address(commands.Converter):
     def convert(self):
         ip, port = self.argument.split(':')
         return ip, int(port)
+
+
 
 
 CommandTuple = namedtuple('Commands', ['send', 'recv', 'nores'])
@@ -105,17 +108,36 @@ class RCON:
 
     @server.command(pass_context=True)
     @checks.admin()
-    async def add(self, ctx, address: Address, password: str, name: str):
+    async def add(self, ctx, address: Address, password: str, name: str, multipacket: bool=True):
         """Adds and names a server's RCON.
 
-        Use this command in a direct message to keep your
-        password secret."""
+        Use this command in a direct message to keep your password secret.
+        Disable multipacket responses only if you know what you're doing."""
         if name in self.json:
             await self.say(ctx, "A server with the name {} already exists, please choose a different name.".format(name))
             return
-        self.json[name] = {"IP": address[0], "port": address[1], "PW": password}
+        self.json[name] = {"IP": address[0], "port": address[1], "PW": password, "MULTI":multipacket}
         dataIO.save_json(file_path, self.json)
         await self.say(ctx, "Server added.")
+
+    @server.command(pass_context=True, hidden=True)
+    @checks.admin()
+    async def edit(self, ctx, name: str, settings: str):
+        """Edit parts of the saved settings for a server.
+
+        Example: [p]server edit SERVER PW="test" MULTI=False
+        Only use this if you know what you're doing."""
+        if name not in self.json:
+            await self.say(ctx, "There are no servers named {}, check "
+                               "`{}server list` for all servers.".format(name, ctx.prefix))
+            return
+
+        try:
+            args = {key:ast.literal_eval(value) for key,value in (setting.split("=") for setting in settings.split())}
+        except ValueError:
+            await self.say(ctx, "The value must be a valid object in Python.")
+            return
+        self.json[name].update(args)
 
     @server.command(pass_context=True)
     @checks.admin()
@@ -156,9 +178,10 @@ class RCON:
             await self.say(ctx, "There is already an active RCON in this channel.")
             return
         server = self.json[name]
+        multipacket = server.get("MULTI", True)
         try:
             rcon = await aiorcon.RCON.create(server["IP"], server["port"], server["PW"], loop=self.bot.loop,
-                                             auto_reconnect_attempts=-autoreconnect)
+                                             auto_reconnect_attempts=-autoreconnect, multiple_packet=multipacket)
         except OSError:
             await self.say(ctx, "Connection failed, ensure the IP/port is correct and that the server is running.")
             return
@@ -177,7 +200,7 @@ class RCON:
 
     @server.command(name="connect", pass_context=True, no_pm=True)
     @checks.admin()
-    async def servert_connect(self, ctx, name: str, autoreconnect: bool=False):
+    async def server_connect(self, ctx, name: str, autoreconnect: bool=False):
         """Sets the active RCON in this channel."""
         return await self._connect(ctx, name, autoreconnect)
 
