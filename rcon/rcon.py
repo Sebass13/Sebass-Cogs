@@ -61,7 +61,7 @@ class RCON:
                 pass
             rcon = self.active_rcon[message.channel]
             sendchatcommand = self.active_chat[message.channel].send
-            content = message.content.encode('ascii', 'ignore').rstrip()
+            content = message.content.encode('ascii', 'ignore').rstrip().decode()
             command = "{} {}: {}".format(sendchatcommand, message.author.name, content)
             try:
                 await rcon(command)
