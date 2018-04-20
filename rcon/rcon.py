@@ -26,8 +26,6 @@ class Address(commands.Converter):
         return ip, int(port)
 
 
-
-
 CommandTuple = namedtuple('Commands', ['send', 'recv', 'nores'])
 
 
@@ -64,9 +62,7 @@ class RCON:
             rcon = self.active_rcon[message.channel]
             sendchatcommand = self.active_chat[message.channel].send
             try:
-                msg = "{}: {}".format(message.author.name, message.content.rstrip())
-                command = "{} {}".format(sendchatcommand, msg)
-                await self.bot.send_message(message.channel, msg)
+                command = "{} {}: {}".format(sendchatcommand, message.author.name, message.content.rstrip())
                 await rcon(command)
             except Exception as e:
                 await self.bot.send_message(message.channel, traceback.format_exc())
@@ -138,6 +134,7 @@ class RCON:
             await self.say(ctx, "The value must be a valid object in Python.")
             return
         self.json[name].update(args)
+        dataIO.save_json(file_path, self.json)
 
     @server.command(pass_context=True)
     @checks.admin()
