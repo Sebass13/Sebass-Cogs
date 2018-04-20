@@ -17,6 +17,7 @@ from aiorcon.exceptions import *
 
 
 
+
 file_path = "data/rcon/settings.json"
 log = logging.getLogger('red.rcon')
 
