@@ -61,8 +61,9 @@ class RCON:
                 pass
             rcon = self.active_rcon[message.channel]
             sendchatcommand = self.active_chat[message.channel].send
+            content = message.content.encode('ascii', 'ignore').rstrip()
+            command = "{} {}: {}".format(sendchatcommand, message.author.name, content)
             try:
-                command = "{} {}: {}".format(sendchatcommand, message.author.name, message.content.rstrip())
                 await rcon(command)
             except Exception as e:
                 await self.bot.send_message(message.channel, traceback.format_exc())
