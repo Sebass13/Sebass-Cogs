@@ -25,6 +25,12 @@ class Address(commands.Converter):
         ip, port = self.argument.split(':')
         return ip, int(port)
 
+class Setting(commands.Converter):
+    valid_keys = {"IP", "port", "PW", "MULTI", "TIMEOUT", "SCC", "RCC", "NR"}
+    def convert(self):
+        key, value = self.argument.split("=")
+        assert key in self.valid_keys
+        return key, value
 
 CommandTuple = namedtuple('Commands', ['send', 'recv', 'nores'])
 
@@ -66,8 +72,8 @@ class RCON:
             try:
                 await rcon(command)
             except Exception as e:
+                #  TODO: This should be removed eventually
                 await self.bot.send_message(message.channel, traceback.format_exc())
-                await self.bot.send_message(message.channel, sys.exc_info()[0])
             await self.chat_update()
 
     async def chat_update(self):
@@ -105,36 +111,42 @@ class RCON:
 
     @server.command(pass_context=True)
     @checks.admin()
-    async def add(self, ctx, address: Address, password: str, name: str, multipacket: bool=True):
+    async def add(self, ctx, address: Address, password: str, name: str, multiple_packet: bool=True, timeout: int=None):
         """Adds and names a server's RCON.
 
         Use this command in a direct message to keep your password secret.
-        Disable multipacket responses only if you know what you're doing."""
+        Disable multiple packet responses only if you know what you're doing."""
         if name in self.json:
             await self.say(ctx, "A server with the name {} already exists, please choose a different name.".format(name))
             return
-        self.json[name] = {"IP": address[0], "port": address[1], "PW": password, "MULTI":multipacket}
+        self.json[name] = {"IP": address[0], "port": address[1], "PW": password, "MULTI":multiple_packet, "TIMEOUT":timeout}
         dataIO.save_json(file_path, self.json)
         await self.say(ctx, "Server added.")
 
     @server.command(pass_context=True, hidden=True)
     @checks.admin()
-    async def edit(self, ctx, name: str, settings: str):
+    async def edit(self, ctx, name: str, *settings: Setting):
         """Edit parts of the saved settings for a server.
 
         Example: [p]server edit SERVER PW="test" MULTI=False
         Only use this if you know what you're doing."""
+
         if name not in self.json:
             await self.say(ctx, "There are no servers named {}, check "
-                               "`{}server list` for all servers.".format(name, ctx.prefix))
+                                "`{}server list` for all servers.".format(name, ctx.prefix))
+            return
+
+        if not settings:
+            await send_cmd_help(ctx)
             return
 
         try:
-            args = {key:ast.literal_eval(value) for key,value in (setting.split("=") for setting in settings.split())}
+            args = {key: ast.literal_eval(value) for key, value in settings}
         except ValueError:
             await self.say(ctx, "The value must be a valid object in Python.")
             return
         self.json[name].update(args)
+        await self.say(ctx, "Updated.")
         dataIO.save_json(file_path, self.json)
 
     @server.command(pass_context=True)
@@ -177,9 +189,11 @@ class RCON:
             return
         server = self.json[name]
         multipacket = server.get("MULTI", True)
+        timeout = server.get("TIMEOUT", None)
         try:
             rcon = await aiorcon.RCON.create(server["IP"], server["port"], server["PW"], loop=self.bot.loop,
-                                             auto_reconnect_attempts=-autoreconnect, multiple_packet=multipacket)
+                                             auto_reconnect_attempts=-autoreconnect,
+                                             multiple_packet=multipacket, timeout=timeout)
         except OSError:
             await self.say(ctx, "Connection failed, ensure the IP/port is correct and that the server is running.")
             return
