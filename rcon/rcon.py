@@ -13,9 +13,17 @@ import aiorcon
 from collections import namedtuple
 import ast
 from aiorcon.exceptions import *
+import pip
+import importlib
 
 file_path = "data/rcon/settings.json"
 log = logging.getLogger('red.rcon')
+logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+                    datefmt='%d-%m-%Y:%H:%M:%S',
+                    level=logging.DEBUG)
+
+
+required_aiorcon_version = '0.6.4'
 
 
 class Address(commands.Converter):
@@ -326,7 +334,7 @@ class RCON:
                 if msg is None:
                     try:
                         await self.bot.delete_message(last)
-                    except:
+                    except discord.HTTPException:
                         pass
                     finally:
                         break
@@ -346,7 +354,21 @@ def check_file():
         dataIO.save_json(file_path, {})
 
 
+def maybe_update(module_, required_version):
+    def outdated(expected, actual):
+        for num1, num2 in zip(*map(lambda v: v.split('.'), (expected, actual))):
+            if int(num1) > int(num2):
+                return True
+        else:
+            return False
+
+    if outdated(required_version, module_.__version__):
+        pip.main(['install', module_.__name__])
+        importlib.reload(module_)
+
+
 def setup(bot):
     check_folder()
     check_file()
+    maybe_update(aiorcon, required_aiorcon_version)
     bot.add_cog(RCON(bot))
