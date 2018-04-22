@@ -368,7 +368,7 @@ def maybe_update(module_, required_version):
             return False
 
     if outdated(required_version, module_.__version__):
-        pipmain(['install', '--upgrade', module_.__name__])
+        pipmain(['install', '--upgrade', '--target', 'lib', module_.__name__])
         importlib.reload(module_)
 
 
