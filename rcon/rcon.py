@@ -87,21 +87,19 @@ class RCON:
             await self.chat_update()
 
     async def chat_update(self):
-        for channel, commands in self.active_chat.items():
+        for channel, commands_ in self.active_chat.items():
             rcon = self.active_rcon[channel]
-            receivechatcommand = commands.recv
+            receivechatcommand = commands_.recv
             try:
                 res = await rcon(receivechatcommand)
-            except RCONClosedError:
-                return
             except Exception as e:
-                await self.bot.send_message(channel, e)
+                #  TODO: Remove usages of traceback
+                await self.bot.send_message(channel, traceback.format_exc())
                 del self.active_rcon[channel]
-                if channel in self.active_chat:
-                    del self.active_chat[channel]
+                del self.active_chat[channel]
                 return
             res = res.strip()
-            if not res or (res == commands.nores):
+            if not res or (res == commands_.nores):
                 return
             result = list(pagify(res))
             for page in result:
@@ -110,8 +108,11 @@ class RCON:
     async def intervalled(self):
         with contextlib.suppress(asyncio.CancelledError):
             while self == self.bot.get_cog("RCON"):
-                await self.chat_update()
-                await asyncio.sleep(1)
+                try:
+                    await self.chat_update()
+                    await asyncio.sleep(1)
+                except:
+                    log.exception('An error has occured in intervalled: ')
 
     @commands.group(pass_context=True)
     async def server(self, ctx):
@@ -214,7 +215,7 @@ class RCON:
             await self.say(ctx, e)
             return
         except Exception as e:
-            await self.say(ctx, "An unexpected error has occurred: %s" % e)
+            await self.say(ctx, traceback.format_exc())
             return
 
         assert rcon.authenticated
@@ -314,7 +315,8 @@ class RCON:
         try:
             res = await rcon(command)
         except Exception as e:
-            await self.say(ctx, e)
+            #  TODO: Remove usages of traceback
+            await self.say(ctx, traceback.format_exc())
             del self.active_rcon[channel]
             if channel in self.active_chat:
                 del self.active_chat[channel]
