@@ -26,7 +26,7 @@ logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:
                     level=logging.DEBUG)
 
 
-required_aiorcon_version = '0.6.4'
+required_aiorcon_version = '0.6.5'
 
 
 class Address(commands.Converter):
