@@ -63,9 +63,17 @@ def mention_mentionables(server, msg):
 
 
 def bold_names(msg):
-    name, rest = msg.split(':', maxsplit=1)
-    name = bold(name)
-    return ':'.join((name, rest))
+    lines = msg.split('\n')
+    out = []
+    for line in lines:
+        name, *rest = line.split(':', maxsplit=1)
+        print(rest)
+        if rest:
+            name = bold(name)
+            out.append(':'.join((name, rest[0])))
+        else:
+            out.append(name)
+    return "\n".join(out)
 
 
 
