@@ -30,6 +30,7 @@ logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:
 required_aiorcon_version = '0.6.6'
 
 
+
 class Address(commands.Converter):
     def convert(self):
         ip, port = self.argument.split(':')
