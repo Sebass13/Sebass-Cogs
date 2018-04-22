@@ -61,9 +61,10 @@ def mention_mentionables(server, msg):
     pattern = r"(@[^\s]+)"
     return re.sub(pattern, replace_possible, msg)
 
+
 def bold_names(msg):
     name, rest = msg.split(':', maxsplit=1)
-    name = bold.name
+    name = bold(name)
     return ':'.join((name, rest))
 
 
