@@ -13,8 +13,11 @@ import aiorcon
 from collections import namedtuple
 import ast
 from aiorcon.exceptions import *
-import pip
 import importlib
+try:
+    from pip import main as pipmain
+except ImportError:
+    from pip._internal import main as pipmain
 
 file_path = "data/rcon/settings.json"
 log = logging.getLogger('red.rcon')
@@ -365,7 +368,7 @@ def maybe_update(module_, required_version):
             return False
 
     if outdated(required_version, module_.__version__):
-        pip.main(['install', module_.__name__])
+        pipmain(['install', module_.__name__])
         importlib.reload(module_)
 
 
