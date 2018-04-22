@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import re
 from .utils import checks
-from .utils.chat_formatting import pagify, box
+from .utils.chat_formatting import pagify, box, escape, bold
 from cogs.utils.dataIO import dataIO
 import os
 import logging
@@ -28,7 +28,6 @@ logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:
 
 
 required_aiorcon_version = '0.6.6'
-
 
 
 class Address(commands.Converter):
@@ -61,6 +60,11 @@ def mention_mentionables(server, msg):
 
     pattern = r"(@[^\s]+)"
     return re.sub(pattern, replace_possible, msg)
+
+def bold_names(msg):
+    name, rest = msg.split(':', maxsplit=1)
+    name = bold.name
+    return ':'.join((name, rest))
 
 
 
@@ -122,6 +126,8 @@ class RCON:
             if not res or (res == commands_.nores):
                 return
             res = mention_mentionables(channel.server, res)
+            res = escape(res, formatting=True)
+            res = bold_names(res)
             result = list(pagify(res))
             for page in result:
                 await self.bot.send_message(channel, page)
