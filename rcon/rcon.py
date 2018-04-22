@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import re
 from .utils import checks
 from .utils.chat_formatting import pagify, box
 from cogs.utils.dataIO import dataIO
@@ -45,6 +46,21 @@ class Setting(commands.Converter):
 
 
 CommandTuple = namedtuple('Commands', ['send', 'recv', 'nores'])
+
+
+def mention_mentionables(server, msg):
+    def replace_possible(match):
+        string = match.group()
+        for mentionable in ('roles', 'members'):
+            options = getattr(server, mentionable)
+            res = discord.utils.find(lambda obj: obj.name == string[1:], options)
+            if res:
+                return res.mention
+        return string
+
+    pattern = r"(@[^\s]+)"
+    return re.sub(pattern, replace_possible, msg)
+
 
 
 class RCON:
@@ -104,6 +120,7 @@ class RCON:
             res = res.strip()
             if not res or (res == commands_.nores):
                 return
+            res = mention_mentionables(channel.server, res)
             result = list(pagify(res))
             for page in result:
                 await self.bot.send_message(channel, page)
