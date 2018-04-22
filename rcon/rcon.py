@@ -8,13 +8,11 @@ import logging
 import contextlib
 from __main__ import send_cmd_help
 import traceback
-import sys
 import asyncio
 import aiorcon
 from collections import namedtuple
 import ast
 from aiorcon.exceptions import *
-
 
 file_path = "data/rcon/settings.json"
 log = logging.getLogger('red.rcon')
@@ -25,18 +23,22 @@ class Address(commands.Converter):
         ip, port = self.argument.split(':')
         return ip, int(port)
 
+
 class Setting(commands.Converter):
     valid_keys = {"IP", "port", "PW", "MULTI", "TIMEOUT", "SCC", "RCC", "NR"}
+
     def convert(self):
         key, value = self.argument.split("=")
         assert key in self.valid_keys
         return key, value
+
 
 CommandTuple = namedtuple('Commands', ['send', 'recv', 'nores'])
 
 
 class RCON:
     """Connect to Servers via RCON"""
+
     def __unload(self):
         for rcon in self.active_rcon.values():
             rcon.close()
@@ -111,15 +113,18 @@ class RCON:
 
     @server.command(pass_context=True)
     @checks.admin()
-    async def add(self, ctx, address: Address, password: str, name: str, multiple_packet: bool=True, timeout: int=None):
+    async def add(self, ctx, address: Address, password: str, name: str, multiple_packet: bool = True,
+                  timeout: int = None):
         """Adds and names a server's RCON.
 
         Use this command in a direct message to keep your password secret.
         Disable multiple packet responses only if you know what you're doing."""
         if name in self.json:
-            await self.say(ctx, "A server with the name {} already exists, please choose a different name.".format(name))
+            await self.say(ctx,
+                           "A server with the name {} already exists, please choose a different name.".format(name))
             return
-        self.json[name] = {"IP": address[0], "port": address[1], "PW": password, "MULTI":multiple_packet, "TIMEOUT":timeout}
+        self.json[name] = {"IP": address[0], "port": address[1], "PW": password,
+                           "MULTI": multiple_packet, "TIMEOUT": timeout}
         dataIO.save_json(file_path, self.json)
         await self.say(ctx, "Server added.")
 
@@ -151,7 +156,7 @@ class RCON:
 
     @server.command(pass_context=True)
     @checks.admin()
-    async def list(self, ctx, passwords_visible:bool=False):
+    async def list(self, ctx, passwords_visible: bool = False):
         """Lists all servers.
 
         Will optionally show the passwords for the servers with `[p]list True`,
@@ -173,7 +178,7 @@ class RCON:
         """Removes a server by name."""
         if name not in self.json:
             await self.say(ctx, "There are no servers named {}, check "
-                               "`{}server list` for all servers.".format(name, ctx.prefix))
+                                "`{}server list` for all servers.".format(name, ctx.prefix))
             return
         del self.json[name]
         dataIO.save_json(file_path, self.json)
@@ -182,7 +187,7 @@ class RCON:
     async def _connect(self, ctx, name, autoreconnect):
         if name not in self.json:
             await self.say(ctx, "There are no servers named {}, check "
-                           "`{}server list` for all servers.".format(name, ctx.prefix))
+                                "`{}server list` for all servers.".format(name, ctx.prefix))
             return
         if ctx.message.channel in self.active_rcon:
             await self.say(ctx, "There is already an active RCON in this channel.")
@@ -212,7 +217,7 @@ class RCON:
 
     @server.command(name="connect", pass_context=True, no_pm=True)
     @checks.admin()
-    async def server_connect(self, ctx, name: str, autoreconnect: bool=False):
+    async def server_connect(self, ctx, name: str, autoreconnect: bool = True):
         """Sets the active RCON in this channel."""
         return await self._connect(ctx, name, autoreconnect)
 
@@ -240,13 +245,13 @@ class RCON:
 
     @chat.command(name="commands", pass_context=True, no_pm=True)
     @checks.admin()
-    async def chat_commands(self, ctx, name: str, receivechatcommand: str, sendchatcommand: str, noresponse: str=""):
+    async def chat_commands(self, ctx, name: str, receivechatcommand: str, sendchatcommand: str, noresponse: str = ""):
         """Set the commands with which the server will receive and send chat commands.
 
         Optional noresponse to set the message that the server returns when there is no response."""
         if name not in self.json:
             await self.say(ctx, "There are no servers named {}, check "
-                           "`{}server list` for all servers.".format(name, ctx.prefix))
+                                "`{}server list` for all servers.".format(name, ctx.prefix))
             return
         self.json[name].update({"RCC": receivechatcommand, "SCC": sendchatcommand, "NR": noresponse})
         dataIO.save_json(file_path, self.json)
@@ -254,7 +259,7 @@ class RCON:
 
     @chat.command(name="connect", pass_context=True, no_pm=True)
     @checks.admin()
-    async def chat_connect(self, ctx, name, autoreconnect: bool=False):
+    async def chat_connect(self, ctx, name, autoreconnect: bool = True):
         """Sets the active chat session in the channel.
 
         This also connects RCON in the channel if this hasn't already been done, and  the autoreconnect setting
@@ -312,8 +317,8 @@ class RCON:
         for i, page in enumerate(result):
             if i != 0 and i % 4 == 0:
                 last = await self.say(ctx, "There are still {} messages. "
-                                          "Type `more` to continue."
-                                          "".format(len(result) - (i+1)))
+                                           "Type `more` to continue."
+                                           "".format(len(result) - (i + 1)))
                 msg = await self.bot.wait_for_message(author=ctx.message.author,
                                                       channel=channel,
                                                       check=lambda m: m.content.strip().lower() == "more",
