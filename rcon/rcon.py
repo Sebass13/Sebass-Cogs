@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import re
 from .utils import checks
-from .utils.chat_formatting import pagify, box, escape, bold
+from .utils.chat_formatting import pagify, box, escape, bold, italics
 from cogs.utils.dataIO import dataIO
 import os
 import logging
@@ -63,17 +63,16 @@ def mention_mentionables(server, msg):
 
 
 def bold_names(msg):
-    lines = msg.split('\n')
-    out = []
-    for line in lines:
-        name, *rest = line.split(':', maxsplit=1)
-        print(rest)
-        if rest:
-            name = bold(name)
-            out.append(':'.join((name, rest[0])))
+    def repl(match):
+        if match.group('server'):
+            out = bold(match.group('server'))
+            out += italics(match.group('name'))
         else:
-            out.append(name)
-    return "\n".join(out)
+            out = bold(match.group('name'))
+        return out
+
+    pattern = re.compile(r'^(?P<server>SERVER: )?(?P<name>.+?:)', re.MULTILINE)
+    return re.sub(pattern, repl, msg)
 
 
 
