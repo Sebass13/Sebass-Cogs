@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import re
 from .utils import checks
-from .utils.chat_formatting import pagify, box, escape, bold, inline
+from .utils.chat_formatting import pagify, box, escape, bold, underline
 from cogs.utils.dataIO import dataIO
 import os
 import logging
@@ -65,7 +65,7 @@ def mention_mentionables(server, msg):
 def bold_names(msg):
     def repl(match):
         if match.group('server'):
-            out = inline(match.group('server')) + " "
+            out = underline(match.group('server')) + " "
         else:
             out = ""
         out += bold(match.group('name'))
@@ -399,7 +399,7 @@ def maybe_update(module_, required_version):
             return False
 
     if outdated(required_version, module_.__version__):
-        pipmain(['install', '--upgrade', '--target', 'lib', module_.__name__])
+        pipmain(['install', '--upgrade', '--target', 'lib', module_.__package__])
         importlib.reload(module_)
 
 
