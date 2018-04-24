@@ -115,38 +115,38 @@ class RCON:
             except Exception as e:
                 #  TODO: This should be removed eventually
                 await self.bot.send_message(message.channel, traceback.format_exc())
-            await self.chat_update()
+            await self._chat_update(message.channel)  # Could throw an error if channel is removed from active_chat
 
-    async def chat_update(self):
-        for channel, commands_ in self.active_chat.items():
-            rcon = self.active_rcon[channel]
-            receivechatcommand = commands_.recv
-            try:
-                res = await rcon(receivechatcommand)
-            except Exception as e:
-                #  TODO: Remove usages of traceback
-                await self.bot.send_message(channel, traceback.format_exc())
-                del self.active_rcon[channel]
-                del self.active_chat[channel]
-                return
-            res = res.strip()
-            if not res or (res == commands_.nores):
-                return
-            res = mention_mentionables(channel.server, res)
-            res = escape(res, formatting=True)
-            res = bold_names(res)
-            result = list(pagify(res))
-            for page in result:
-                await self.bot.send_message(channel, page)
+    async def _chat_update(self, channel):
+        commands_ = self.active_chat[channel]
+        rcon = self.active_rcon[channel]
+        try:
+            res = await rcon(commands_.recv)
+        except Exception as e:
+            #  TODO: Remove usages of traceback
+            await self.bot.send_message(channel, traceback.format_exc())
+            del self.active_rcon[channel]
+            del self.active_chat[channel]
+            return
+        res = res.strip()
+        if not res or (res == commands_.nores):
+            return
+        res = mention_mentionables(channel.server, res)
+        res = escape(res, formatting=True)
+        res = bold_names(res)
+        result = list(pagify(res))
+        for page in result:
+            await self.bot.send_message(channel, page)
 
     async def intervalled(self):
         with contextlib.suppress(asyncio.CancelledError):
             while self == self.bot.get_cog("RCON"):
                 try:
-                    await self.chat_update()
+                    for channel in self.active_chat:
+                        self.bot.loop.create_task(self._chat_update(channel))
                     await asyncio.sleep(1)
                 except:
-                    log.exception('An error has occured in intervalled: ')
+                    log.exception('An error has occurred in intervalled: ')
 
     @commands.group(pass_context=True)
     async def server(self, ctx):
