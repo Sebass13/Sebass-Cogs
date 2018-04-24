@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import re
 from .utils import checks
-from .utils.chat_formatting import pagify, box, escape, bold, italics
+from .utils.chat_formatting import pagify, box, escape, bold, inline
 from cogs.utils.dataIO import dataIO
 import os
 import logging
@@ -27,7 +27,7 @@ logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:
                     level=logging.DEBUG)
 
 
-required_aiorcon_version = '0.6.6'
+required_aiorcon_version = '0.6.7'
 
 
 class Address(commands.Converter):
@@ -65,15 +65,14 @@ def mention_mentionables(server, msg):
 def bold_names(msg):
     def repl(match):
         if match.group('server'):
-            out = bold(match.group('server'))
-            out += italics(match.group('name'))
+            out = inline(match.group('server')) + " "
         else:
-            out = bold(match.group('name'))
+            out = ""
+        out += bold(match.group('name'))
         return out
 
-    pattern = re.compile(r'^(?P<server>SERVER: )?(?P<name>.+?:)', re.MULTILINE)
+    pattern = re.compile(r'^(?P<server>SERVER:)? ?(?P<name>.+?:)', re.MULTILINE)
     return re.sub(pattern, repl, msg)
-
 
 
 class RCON:
