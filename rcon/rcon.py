@@ -81,15 +81,15 @@ class RCON:
     def __unload(self):
         for rcon in self.active_rcon.values():
             rcon.close()
-        if self.task:
-            self.task.cancel()
+        for task in self.tasks:
+            task.cancel()
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.json = dataIO.load_json(file_path)
         self.active_rcon = {}
         self.active_chat = {}
-        self.task = self.bot.loop.create_task(self.intervalled())
+        self.tasks = []
 
     async def say(self, ctx, *args, **kwargs):
         """A stronger version of self.bot.say that is used because of magic breaking :("""
@@ -115,10 +115,8 @@ class RCON:
             except Exception as e:
                 #  TODO: This should be removed eventually
                 await self.bot.send_message(message.channel, traceback.format_exc())
-            await self._chat_update(message.channel)  # Could throw an error if channel is removed from active_chat
 
-    async def _chat_update(self, channel):
-        commands_ = self.active_chat[channel]
+    async def _chat_update(self, channel, commands_):
         rcon = self.active_rcon[channel]
         try:
             res = await rcon(commands_.recv)
@@ -138,12 +136,12 @@ class RCON:
         for page in result:
             await self.bot.send_message(channel, page)
 
-    async def intervalled(self):
+    async def _intervaled_chat(self, channel):
+        commands_ = self.active_chat[channel]
         with contextlib.suppress(asyncio.CancelledError):
-            while self == self.bot.get_cog("RCON"):
+            while self == self.bot.get_cog("RCON") and channel in self.active_chat:
                 try:
-                    for channel in self.active_chat:
-                        self.bot.loop.create_task(self._chat_update(channel))
+                    await self._chat_update(channel, commands_)
                     await asyncio.sleep(1)
                 except:
                     log.exception('An error has occurred in intervalled: ')
@@ -323,6 +321,7 @@ class RCON:
         self.active_chat[channel] = CommandTuple(send=self.json[name]["SCC"],
                                                  recv=self.json[name]["RCC"],
                                                  nores=self.json[name]["NR"])
+        self.tasks.append(self.bot.loop.create_task(self._intervaled_chat(channel)))
         await self.say(ctx, "Live chat is now enabled.")
 
     @chat.command(name="disconnect", pass_context=True, no_pm=True)
