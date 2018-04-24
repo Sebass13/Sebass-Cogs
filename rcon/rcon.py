@@ -53,7 +53,7 @@ def mention_mentionables(server, msg):
         string = match.group()
         for mentionable in ('roles', 'members'):
             options = getattr(server, mentionable)
-            res = discord.utils.find(lambda obj: obj.name == string[1:], options)
+            res = discord.utils.find(lambda obj: obj.name.lower() == string[1:].lower(), options)
             if res:
                 return res.mention
         return string
