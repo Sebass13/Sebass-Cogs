@@ -93,7 +93,7 @@ class RCON:
         self.tasks = []
 
     async def say(self, channelable, *args, **kwargs):
-        """A stronger version of self.say that is used because of magic breaking :("""
+        """A stronger version of bot.say that is used because of magic breaking :("""
         if isinstance(channelable, commands.context.Context):
             channel = channelable.message.channel
         elif isinstance(channelable, discord.Message):
@@ -101,7 +101,7 @@ class RCON:
         elif isinstance(channelable, discord.Channel):
             channel = channelable
         else:
-            raise TypeError("Must be either a Context, Message, or Channel Object")
+            raise TypeError("Must be either a Context, Message, or Channel object")
         return await self.bot.send_message(channel, *args, **kwargs)
 
     async def on_message(self, message: discord.Message):
@@ -150,7 +150,7 @@ class RCON:
         try:
             res = await rcon(commands_.recv)
         except RCONClosedError:
-            pass
+            return
         except Exception as e:
             #  TODO: Remove usages of traceback
             await self.say(channel, traceback.format_exc())
