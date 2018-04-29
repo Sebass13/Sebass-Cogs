@@ -27,7 +27,7 @@ logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:
                     level=logging.DEBUG)
 
 
-required_aiorcon_version = '0.6.7'
+required_aiorcon_version = '0.6.8'
 
 
 class Address(commands.Converter):
@@ -89,11 +89,20 @@ class RCON:
         self.json = dataIO.load_json(file_path)
         self.active_rcon = {}
         self.active_chat = {}
+        self.active_reconnect = {}
         self.tasks = []
 
-    async def say(self, ctx, *args, **kwargs):
-        """A stronger version of self.bot.say that is used because of magic breaking :("""
-        return await self.bot.send_message(ctx.message.channel, *args, **kwargs)
+    async def say(self, channelable, *args, **kwargs):
+        """A stronger version of self.say that is used because of magic breaking :("""
+        if isinstance(channelable, commands.context.Context):
+            channel = channelable.message.channel
+        elif isinstance(channelable, discord.Message):
+            channel = channelable.channel
+        elif isinstance(channelable, discord.Channel):
+            channel = channelable
+        else:
+            raise TypeError("Must be either a Context, Message, or Channel Object")
+        return await self.bot.send_message(channel, *args, **kwargs)
 
     async def on_message(self, message: discord.Message):
         prefixes = await self.bot._get_prefix(message)
@@ -112,17 +121,39 @@ class RCON:
             command = "{} {}: {}".format(sendchatcommand, message.author.name, content)
             try:
                 await rcon(command)
+            except RCONAuthenticationError as e:
+                await self.say(message, e)
+            except RCONClosedError:
+                return
             except Exception as e:
                 #  TODO: This should be removed eventually
-                await self.bot.send_message(message.channel, traceback.format_exc())
+                await self.say(message, traceback.format_exc())
+
+    def reconnect_cb_factory(self, channel):
+        def reconnect_cb(attempt):
+            asyncio.ensure_future(self.reconnect_message(channel, attempt), loop=self.bot.loop)
+        return reconnect_cb
+
+    async def reconnect_message(self, channel, attempt):
+        if attempt > 0:
+            content = "Reconnecting...Attempt #{}".format(attempt)
+            if channel in self.active_reconnect:
+                msg = self.active_reconnect[channel]
+                await self.bot.edit_message(msg, content)
+            else:
+                self.active_reconnect[channel] = await self.say(channel, content)
+        else:
+            await self.bot.delete_message(self.active_reconnect[channel])
 
     async def _chat_update(self, channel, commands_):
         rcon = self.active_rcon[channel]
         try:
             res = await rcon(commands_.recv)
+        except RCONClosedError:
+            pass
         except Exception as e:
             #  TODO: Remove usages of traceback
-            await self.bot.send_message(channel, traceback.format_exc())
+            await self.say(channel, traceback.format_exc())
             del self.active_rcon[channel]
             del self.active_chat[channel]
             return
@@ -134,7 +165,7 @@ class RCON:
         res = bold_names(res)
         result = list(pagify(res))
         for page in result:
-            await self.bot.send_message(channel, page)
+            await self.say(channel, page)
 
     async def _intervaled_chat(self, channel):
         commands_ = self.active_chat[channel]
@@ -234,12 +265,13 @@ class RCON:
             await self.say(ctx, "There is already an active RCON in this channel.")
             return
         server = self.json[name]
-        multipacket = server.get("MULTI", True)
+        multiple_packet = server.get("MULTI", True)
         timeout = server.get("TIMEOUT", None)
         try:
             rcon = await aiorcon.RCON.create(server["IP"], server["port"], server["PW"], loop=self.bot.loop,
                                              auto_reconnect_attempts=-autoreconnect,
-                                             multiple_packet=multipacket, timeout=timeout)
+                                             multiple_packet=multiple_packet, timeout=timeout,
+                                             auto_reconnect_cb=self.reconnect_cb_factory(ctx.message.channel))
         except OSError:
             await self.say(ctx, "Connection failed, ensure the IP/port is correct and that the server is running.")
             return
@@ -347,6 +379,8 @@ class RCON:
         rcon = self.active_rcon[channel]
         try:
             res = await rcon(command)
+        except RCONClosedError:
+            return
         except Exception as e:
             #  TODO: Remove usages of traceback
             await self.say(ctx, traceback.format_exc())
@@ -402,7 +436,7 @@ def maybe_update(module_, required_version):
         importlib.reload(module_)
 
 
-def setup(bot):
+def setup(bot: commands.Bot):
     check_folder()
     check_file()
     maybe_update(aiorcon, required_aiorcon_version)
