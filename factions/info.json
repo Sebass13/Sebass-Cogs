@@ -1,0 +1,10 @@
+{
+    "AUTHOR" : "Sebass",
+    "INSTALL_MSG" : "Use [p]points create to start a faction",
+    "NAME" : "Factions",
+    "SHORT" : "Point system on a per-faction basis",
+    "DESCRIPTION" : "A cog to create factions and add and remove points from the factions.", 
+    "TAGS" : ["Factions", "Points", "Houses", "Harry Potter"],
+    "REQUIREMENTS" : ["tabulate"],
+    "HIDDEN" : false
+}
