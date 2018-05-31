@@ -241,7 +241,7 @@ class Factions:
         await self.bot.say(self._parse_line(server, "lang_reset"))
 
     @points.command(pass_context=True)
-    @checks.mod()
+    @checks.mod_or_permissions(administrator=True)
     async def add(self, ctx: commands.Context, faction_name: str, points: int):
         """Adds a given number of points to a faction."""
         server = ctx.message.server
@@ -257,7 +257,7 @@ class Factions:
             dataIO.save_json(FILE_PATH, self.json)
 
     @points.command(pass_context=True)
-    @checks.mod()
+    @checks.mod_or_permissions(administrator=True)
     async def remove(self, ctx: commands.Context, faction_name: str, points: int):
         """Removes a given number of points to a faction."""
         server = ctx.message.server
