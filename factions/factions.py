@@ -59,7 +59,7 @@ class Factions:
         if server.id not in self.json:
             self.json[server.id] = {"factions": {},
                                     "aliases": {},
-                                    "language": default_language}
+                                    "language": default_language.copy()}
             dataIO.save_json(FILE_PATH, self.json)
         if isinstance(key, str):
             return self.json[server.id][key]
